@@ -1,0 +1,25 @@
+# Document Automation Solution - Requirements
+# Compatible with Python 3.13.2
+
+# Core PDF processing
+PyPDF2>=3.0.0
+pdfplumber>=0.10.0
+
+# Financial data
+yfinance>=0.2.0
+
+# Word document processing
+python-docx>=1.0.0
+
+# Data manipulation and analysis
+pandas>=2.0.0
+numpy>=1.24.0
+
+# Excel support
+openpyxl>=3.1.0
+
+# Date utilities
+python-dateutil>=2.8.0
+
+# HTTP requests
+requests>=2.31.0
