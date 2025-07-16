@@ -135,7 +135,8 @@ def main():
     if command == '--test':
         system.run_accuracy_test()
     elif command == '--help':
-        main()
+        print("Help displayed above")
+        return
     elif os.path.exists(command):
         # Process specific company
         output_folder = f"{command}_output_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
