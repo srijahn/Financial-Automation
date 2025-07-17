@@ -175,17 +175,13 @@ class EnhancedAutomationEngine:
                 logger.warning("⚠️ No stock symbol found for yfinance integration")
                 return consolidated_data
             
-            # Known symbol mappings for accuracy
-            symbol_mappings = {
-                'AAPL': 'AAPL',
-                'MSFT': 'MSFT',
-                'DV': 'DV',
-                'BLBD': 'BLBD',
-                'AMZN': 'AMZN'
-            }
+            # Validate stock symbol format (1-5 capital letters)
+            if not re.match(r'^[A-Z]{1,5}$', stock_symbol):
+                logger.warning(f"⚠️ Invalid stock symbol format: {stock_symbol}")
+                return consolidated_data
             
-            # Use mapped symbol or original
-            final_symbol = symbol_mappings.get(stock_symbol, stock_symbol)
+            # Use the extracted symbol directly
+            final_symbol = stock_symbol
             
             # Initialize financial analyzer with ticker
             self.financial_analyzer = ComprehensiveFinancialAnalyzer(final_symbol)
@@ -322,11 +318,16 @@ class EnhancedAutomationEngine:
         ]):
             return None
         
-        # Must have location indicators
+        # Must have location indicators (states, countries, or address structure)
         if not any(indicator in value.lower() for indicator in [
-            'new york', 'california', 'cupertino', 'redmond', 'macon', 'georgia'
+            'new york', 'california', 'georgia', 'washington', 'texas', 'florida',
+            'illinois', 'pennsylvania', 'ohio', 'michigan', 'virginia', 'massachusetts',
+            'united states', 'usa', 'us', 'america', 'canada', 'street', 'avenue',
+            'road', 'boulevard', 'drive', 'lane', 'court', 'plaza', 'way'
         ]):
-            return None
+            # Check for state abbreviations
+            if not re.search(r'\b[A-Z]{2}\b', value):
+                return None
         
         return value.strip()
     
@@ -398,7 +399,10 @@ class EnhancedAutomationEngine:
         
         # Must contain geographic indicators
         if not any(indicator in value.lower() for indicator in [
-            'united states', 'canada', 'north america', 'international'
+            'united states', 'canada', 'north america', 'international', 'global',
+            'worldwide', 'domestic', 'foreign', 'overseas', 'europe', 'asia',
+            'africa', 'australia', 'south america', 'latin america', 'pacific',
+            'region', 'country', 'countries', 'market', 'markets', 'territory'
         ]):
             return None
         

@@ -329,14 +329,15 @@ class TargetedPatternMatcher:
         
         self.company_patterns = {
             'company_name': [
-                # Company-specific patterns (high confidence)
-                r'(Apple\s+Inc\.?)',
-                r'(Microsoft\s+Corporation)',
-                r'(DoubleVerify\s+Holdings,?\s+Inc\.?)',
-                r'(Blue\s+Bird\s+Corporation)',
-                r'(Amazon\.com,?\s+Inc\.?)',
-                # Generic patterns (lower confidence)
-                r'(?i)(?:company|corporation|issuer)\s*:?\s*([A-Z][A-Za-z\s&\.]+(?:Corporation|Corp\.?|Inc\.?|LLC|Ltd\.?))',
+                # Generic patterns for any company name - improved for better accuracy
+                r'(?i)(?:issuer|registrant|company):\s*([A-Z][A-Za-z\s&\.,]+(?:Corporation|Corp\.?|Inc\.?|LLC|Ltd\.?|Company|Co\.?))',
+                r'(?i)(?:the\s+)?([A-Z][A-Za-z\s&\.,]+(?:Corporation|Corp\.?|Inc\.?|LLC|Ltd\.?|Company|Co\.?))\s+(?:is\s+a|operates|provides|offers)',
+                r'(?i)^([A-Z][A-Za-z\s&\.,]+(?:Corporation|Corp\.?|Inc\.?|LLC|Ltd\.?|Company|Co\.?))\s+(?:has|was|is|will)',
+                r'(?i)(?:about|regarding)\s+([A-Z][A-Za-z\s&\.,]+(?:Corporation|Corp\.?|Inc\.?|LLC|Ltd\.?|Company|Co\.?))',
+                r'(?i)([A-Z][A-Za-z\s&\.,]+(?:Corporation|Corp\.?|Inc\.?|LLC|Ltd\.?|Company|Co\.?))\s+(?:announced|reported|filed)',
+                r'(?i)(?:name|entity):\s*([A-Z][A-Za-z\s&\.,]+(?:Corporation|Corp\.?|Inc\.?|LLC|Ltd\.?|Company|Co\.?))',
+                r'(?i)(?:issuer|registrant):\s*([A-Z][A-Za-z\s&\.,]+(?:Corporation|Corp\.?|Inc\.?|LLC|Ltd\.?|Company|Co\.?))',
+                r'(?i)(?:company|corporation|entity)\s+name:\s*([A-Z][A-Za-z\s&\.,]+(?:Corporation|Corp\.?|Inc\.?|LLC|Ltd\.?|Company|Co\.?))',
             ],
             'company_address': [
                 # IMPROVED: More specific address patterns
@@ -350,19 +351,28 @@ class TargetedPatternMatcher:
             ],
             'fiscal_year': [
                 # IMPROVED: More specific fiscal year patterns with recent dates
-                r'(?i)(?:fiscal\s+year|year)\s+(?:ending|ended)\s+([A-Za-z]+\s+\d{1,2},?\s+202[0-9])',
+                r'(?i)(?:fiscal\s+year|financial\s+year|year)\s+(?:ending|ended)\s+([A-Za-z]+\s+\d{1,2},?\s+202[0-9])',
                 r'(?i)year\s+ended\s+([A-Za-z]+\s+\d{1,2},?\s+202[0-9])',
                 r'(?i)for\s+the\s+year\s+ended\s+([A-Za-z]+\s+\d{1,2},?\s+202[0-9])',
+                r'(?i)fiscal\s+year\s+202[0-9]\s+ended\s+([A-Za-z]+\s+\d{1,2},?\s+202[0-9])',
+                r'(?i)(?:fiscal|financial)\s+year:\s+([A-Za-z]+\s+\d{1,2},?\s+202[0-9])',
                 # Specific recent dates
                 r'(?i)(September\s+30,?\s+202[0-9])',
                 r'(?i)(December\s+31,?\s+202[0-9])',
                 r'(?i)(June\s+30,?\s+202[0-9])',
+                r'(?i)(March\s+31,?\s+202[0-9])',
             ],
             'stock_symbol': [
                 # Exchange-specific patterns
                 r'(?i)(?:NYSE|NASDAQ)\s*[:\-]?\s*([A-Z]{1,5})\b',
                 r'(?i)(?:trading|ticker)\s+symbol\s*[:\-]?\s*([A-Z]{1,5})\b',
                 r'(?i)common\s+stock\s+.*?(?:symbol|ticker)\s*[:\-]?\s*([A-Z]{1,5})\b',
+                r'(?i)(?:symbol|ticker)\s*[:\-]?\s*([A-Z]{1,5})\b',
+                r'(?i)trading\s+under\s+(?:the\s+)?symbol\s*[:\-]?\s*([A-Z]{1,5})\b',
+                r'(?i)listed\s+on\s+(?:NYSE|NASDAQ)\s+under\s+(?:the\s+)?symbol\s*[:\-]?\s*([A-Z]{1,5})\b',
+                r'(?i)stock\s+is\s+traded\s+under\s+(?:the\s+)?symbol\s*[:\-]?\s*([A-Z]{1,5})\b',
+                r'(?i)shares\s+are\s+traded\s+under\s+(?:the\s+)?symbol\s*[:\-]?\s*([A-Z]{1,5})\b',
+                r'(?i)(?:stock|shares)\s+.*?symbol\s*[:\-]?\s*([A-Z]{1,5})\b',
             ],
             'industry': [
                 # IMPROVED: Better business description patterns
@@ -473,28 +483,48 @@ class TargetedPatternMatcher:
         
         return extracted_data
 
-    def _detect_company_context(self, text: str, document_name: str) -> Dict[str, bool]:
-        """Enhanced company context detection"""
-        context = {
-            'is_apple': any(indicator in text for indicator in ['Apple Inc', 'AAPL', 'Cupertino']),
-            'is_microsoft': any(indicator in text for indicator in ['Microsoft Corporation', 'MSFT', 'Redmond']),
-            'is_doubleverify': any(indicator in text for indicator in ['DoubleVerify', 'DV', 'digital advertising']),
-            'is_bluebird': any(indicator in text for indicator in ['Blue Bird', 'BLBD', 'school bus']),
-            'is_amazon': any(indicator in text for indicator in ['Amazon.com', 'AMZN', 'AWS']),
-        }
+    def _detect_company_context(self, text: str, document_name: str) -> Dict[str, Any]:
+        """Dynamic company context detection based on document content"""
+        context = {}
         
-        # Also check document name
-        doc_lower = document_name.lower()
-        context['is_apple'] = context['is_apple'] or 'apple' in doc_lower or 'aapl' in doc_lower
-        context['is_microsoft'] = context['is_microsoft'] or 'microsoft' in doc_lower or 'msft' in doc_lower
-        context['is_doubleverify'] = context['is_doubleverify'] or 'doubleverify' in doc_lower or 'dv' in doc_lower
-        context['is_bluebird'] = context['is_bluebird'] or 'bluebird' in doc_lower or 'blbd' in doc_lower
-        context['is_amazon'] = context['is_amazon'] or 'amazon' in doc_lower or 'amzn' in doc_lower
+        # Extract company name and stock symbol dynamically
+        company_name = ""
+        stock_symbol = ""
+        
+        # Try to find company name in text
+        for pattern in self.company_patterns['company_name']:
+            match = re.search(pattern, text)
+            if match:
+                company_name = match.group(1).strip()
+                break
+        
+        # Try to find stock symbol in text
+        for pattern in self.company_patterns['stock_symbol']:
+            match = re.search(pattern, text)
+            if match:
+                stock_symbol = match.group(1).strip()
+                break
+        
+        # Create dynamic context based on extracted information
+        if company_name:
+            context['company_name'] = company_name
+        if stock_symbol:
+            context['stock_symbol'] = stock_symbol
+        
+        # Extract business type indicators
+        business_indicators = []
+        for pattern in self.company_patterns['industry']:
+            match = re.search(pattern, text)
+            if match:
+                business_indicators.append(match.group(1).strip())
+        
+        context['business_indicators'] = business_indicators
+        context['document_name'] = document_name.lower()
         
         return context
 
     def _calculate_enhanced_confidence(self, field_type: str, pattern: str, match: re.Match, 
-                                     context: str, pattern_idx: int, company_context: Dict[str, bool]) -> float:
+                                     context: str, pattern_idx: int, company_context: Dict[str, Any]) -> float:
         """Enhanced confidence calculation with field-specific logic"""
         base_confidence = 0.8
         
@@ -512,60 +542,37 @@ class TargetedPatternMatcher:
             'key_products': 0.7,
         }
         
-        base_confidence = field_confidence_map.get(field_type, 0.8)
+        confidence = field_confidence_map.get(field_type, base_confidence)
         
-        # Pattern quality (earlier patterns are more specific)
-        pattern_quality = max(0.5, 1.0 - (pattern_idx * 0.1))
+        # Pattern priority bonus (earlier patterns are more specific)
+        if pattern_idx == 0:
+            confidence += 0.1
+        elif pattern_idx == 1:
+            confidence += 0.05
         
-        # Context quality assessment
-        context_quality = 1.0
-        context_lower = context.lower()
+        # Context-based adjustments
+        if context and field_type in ['revenue', 'net_income', 'total_assets']:
+            # Financial context indicators
+            if any(indicator in context.lower() for indicator in [
+                'consolidated', 'financial', 'statements', 'income', 'balance sheet'
+            ]):
+                confidence += 0.05
         
-        # Negative indicators
-        negative_indicators = [
-            'risk', 'may', 'could', 'estimate', 'approximately', 'pursuant',
-            'section', 'regulation', 'rule', 'act', 'code', 'disclosure',
-            'commitment', 'lease', 'obligation', 'contingent'
-        ]
+        # Document name relevance
+        if company_context.get('document_name'):
+            doc_name = company_context['document_name']
+            if field_type in ['company_name', 'stock_symbol']:
+                # Higher confidence if company info matches document name
+                if company_context.get('company_name') and company_context['company_name'].lower() in doc_name:
+                    confidence += 0.05
+                if company_context.get('stock_symbol') and company_context['stock_symbol'].lower() in doc_name:
+                    confidence += 0.05
         
-        for indicator in negative_indicators:
-            if indicator in context_lower:
-                context_quality -= 0.1
-        
-        # Positive indicators for financial fields
-        if field_type in ['revenue', 'net_income', 'total_assets', 'total_liabilities']:
-            positive_indicators = ['consolidated', 'statement', 'income', 'balance', 'financial']
-            for indicator in positive_indicators:
-                if indicator in context_lower:
-                    context_quality += 0.1
-        
-        # Company-specific confidence boosts
-        if any(company_context.values()):
-            # Boost confidence for company-specific matches
-            if field_type == 'company_name':
-                context_quality += 0.2
-            elif field_type == 'stock_symbol':
-                context_quality += 0.15
-        
-        # Match quality
-        match_quality = 1.0
-        match_text = match.group(0)
-        
-        # Longer matches generally better
-        if len(match_text) > 20:
-            match_quality += 0.1
-        elif len(match_text) < 10:
-            match_quality -= 0.1
-        
-        # Recent dates get higher confidence
-        if field_type == 'fiscal_year' and '202' in match_text:
-            match_quality += 0.2
-        
-        final_confidence = base_confidence * pattern_quality * context_quality * match_quality
-        return min(0.98, max(0.2, final_confidence))
+        # Ensure confidence stays within bounds
+        return min(confidence, 1.0)
 
     def _enhanced_validate_company_field(self, info_type: str, value: str, 
-                                       company_context: Dict[str, bool], full_text: str) -> bool:
+                                       company_context: Dict[str, Any], full_text: str) -> bool:
         """Enhanced validation for company fields"""
         if len(value) < 3:
             return False
@@ -574,16 +581,27 @@ class TargetedPatternMatcher:
         
         # Company-specific validation
         if info_type == 'company_name':
-            # Must match expected company for context
-            if company_context['is_apple'] and 'apple' not in value_lower:
+            # Must look like a proper company name
+            if not any(corp_indicator in value_lower for corp_indicator in [
+                'inc', 'corp', 'corporation', 'llc', 'ltd', 'company', 'co', 'limited'
+            ]):
                 return False
-            if company_context['is_microsoft'] and 'microsoft' not in value_lower:
+            
+            # Must not contain generic terms or regulatory language
+            if any(bad_term in value_lower for bad_term in [
+                'pursuant', 'section', 'regulation', 'rule', 'act', 'code',
+                'financial', 'consolidated', 'statement', 'disclosure',
+                'securities', 'exchange', 'commission', 'sec', 'form',
+                'quarterly', 'annual', 'report', 'filing'
+            ]):
                 return False
-            if company_context['is_doubleverify'] and 'doubleverify' not in value_lower:
+            
+            # Must not be too long (likely extracted wrong context)
+            if len(value) > 100:
                 return False
-            if company_context['is_bluebird'] and 'blue bird' not in value_lower:
-                return False
-            if company_context['is_amazon'] and 'amazon' not in value_lower:
+            
+            # Must start with capital letter
+            if not value[0].isupper():
                 return False
         
         elif info_type == 'company_address':
@@ -591,21 +609,43 @@ class TargetedPatternMatcher:
             # Must look like an actual address
             if any(bad_phrase in value_lower for bad_phrase in [
                 'pursuant', 'section', 'regulation', 'rule', 'act', 'code',
-                'countries outside', 'international', 'commitment', 'lease',
+                'countries outside', 'commitment', 'lease',
                 'financial', 'consolidated', 'statement', 'disclosure'
             ]):
                 return False
             
-            # Must have location indicators
+            # Must have location indicators (states, cities, or address components)
             if not any(indicator in value_lower for indicator in [
-                'new york', 'california', 'cupertino', 'redmond', 'macon',
-                'georgia', 'washington', 'ny', 'ca', 'wa', 'ga'
+                'new york', 'california', 'georgia', 'washington', 'texas', 'florida',
+                'ny', 'ca', 'wa', 'ga', 'tx', 'fl', 'street', 'avenue', 'road',
+                'boulevard', 'drive', 'lane', 'court', 'plaza', 'way', 'suite'
             ]):
+                # Check for state abbreviations
+                if not re.search(r'\b[A-Z]{2}\b', value):
+                    return False
+        
+        elif info_type == 'stock_symbol':
+            # Must be 1-5 capital letters
+            if not re.match(r'^[A-Z]{1,5}$', value):
                 return False
         
         elif info_type == 'fiscal_year':
             # IMPROVED: Must have recent year (2020-2024)
             if not re.search(r'202[0-4]', value):
+                return False
+            
+            # Must look like a proper date
+            if not any(month in value_lower for month in [
+                'january', 'february', 'march', 'april', 'may', 'june',
+                'july', 'august', 'september', 'october', 'november', 'december'
+            ]):
+                return False
+            
+            # Must not contain regulatory language
+            if any(bad_term in value_lower for bad_term in [
+                'pursuant', 'section', 'regulation', 'rule', 'act', 'code',
+                'disclosure', 'securities', 'exchange', 'commission'
+            ]):
                 return False
         
         elif info_type in ['industry', 'primary_business']:
@@ -646,7 +686,7 @@ class TargetedPatternMatcher:
         return True
 
     def _enhanced_clean_company_field(self, info_type: str, value: str, 
-                                    company_context: Dict[str, bool]) -> str:
+                                    company_context: Dict[str, Any]) -> str:
         """Enhanced cleaning for company field values"""
         value = value.strip()
         
@@ -654,62 +694,35 @@ class TargetedPatternMatcher:
             # Remove common prefixes
             value = re.sub(r'^(The\s+|A\s+)', '', value, flags=re.IGNORECASE)
             value = value.strip()
-        
-        elif info_type == 'company_address':
-            # IMPROVED: Address cleaning
-            # Normalize address formatting
-            value = re.sub(r'\s+', ' ', value)
-            value = value.strip()
-            
-            # Remove trailing punctuation
-            value = re.sub(r'[.,;]+$', '', value)
-            
-            # Capitalize properly
-            parts = value.split(',')
-            cleaned_parts = []
-            for part in parts:
-                part = part.strip()
-                if part:
-                    # Capitalize first letter of each word
-                    part = ' '.join(word.capitalize() for word in part.split())
-                    cleaned_parts.append(part)
-            
-            value = ', '.join(cleaned_parts)
-        
-        elif info_type == 'fiscal_year':
-            # IMPROVED: Fiscal year cleaning
-            value = re.sub(r'\s+', ' ', value)
-            value = value.strip()
             
             # Ensure proper capitalization
-            months = ['January', 'February', 'March', 'April', 'May', 'June',
-                     'July', 'August', 'September', 'October', 'November', 'December']
+            if value.islower():
+                value = value.title()
             
-            for month in months:
-                value = re.sub(rf'\b{month.lower()}\b', month, value, flags=re.IGNORECASE)
+            # Remove trailing punctuation
+            value = value.rstrip('.,;:')
         
-        elif info_type in ['industry', 'primary_business']:
-            # IMPROVED: Business description cleaning
-            value = re.sub(r'\s+', ' ', value)
+        elif info_type == 'company_address':
+            # Clean up address formatting
+            value = re.sub(r'\s+', ' ', value)  # Normalize whitespace
+            value = value.strip()
+        
+        elif info_type == 'stock_symbol':
+            # Ensure uppercase
+            value = value.upper().strip()
+        
+        elif info_type == 'primary_business':
+            # Clean up business description
+            value = re.sub(r'\s+', ' ', value)  # Normalize whitespace
             value = value.strip()
             
             # Remove trailing punctuation
-            value = re.sub(r'[.,;]+$', '', value)
-            
-            # Capitalize first letter
-            if value:
-                value = value[0].upper() + value[1:]
+            value = value.rstrip('.,;:')
         
         elif info_type == 'geographic_markets':
-            # IMPROVED: Geographic markets cleaning
-            value = re.sub(r'\s+', ' ', value)
+            # Clean up geographic markets
+            value = re.sub(r'\s+', ' ', value)  # Normalize whitespace
             value = value.strip()
-            
-            # Standardize common phrases
-            value = re.sub(r'United\s+States\s+and\s+international\s+markets', 
-                          'United States and international markets', value, flags=re.IGNORECASE)
-            value = re.sub(r'United\s+States\s+and\s+Canada', 
-                          'United States and Canada', value, flags=re.IGNORECASE)
         
         return value
 

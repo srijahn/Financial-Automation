@@ -1,0 +1,89 @@
+{
+  "timestamp": "2025-07-17T21:41:54.571527",
+  "processing_stats": {
+    "total_documents": 6,
+    "successful_extractions": 6,
+    "failed_extractions": 0,
+    "accuracy_score": 69.90873015873015,
+    "processing_time": 116.057366,
+    "extraction_details": [
+      {
+        "file": "20230301 - 10K - DV - Annual Report - 141 pages.pdf",
+        "extractions": 1004,
+        "avg_confidence": 0.8264442231075697
+      },
+      {
+        "file": "20230301 - PR - DV - DoubleVerify Reports Fourth Quarter - 12 pages.pdf",
+        "extractions": 96,
+        "avg_confidence": 0.8567708333333334
+      },
+      {
+        "file": "20231109 - PR - DV - DoubleVerify Reports Third Quarter - 2 pages (1).pdf",
+        "extractions": 73,
+        "avg_confidence": 0.8452054794520548
+      },
+      {
+        "file": "20231110 - IR - DV - Q3 Investor Presentation Quarter - 38 pages.pdf",
+        "extractions": 27,
+        "avg_confidence": 0.8222222222222222
+      },
+      {
+        "file": "20231110 - T-PR - DV - Q3 Third Quarter 2023 - 16 pages.pdf",
+        "extractions": 60,
+        "avg_confidence": 0.8058333333333334
+      },
+      {
+        "file": "DV_email.pdf",
+        "extractions": 0,
+        "avg_confidence": 0
+      }
+    ]
+  },
+  "accuracy_metrics": {
+    "overall_accuracy": 69.90873015873015,
+    "completeness_score": 66.66666666666666,
+    "quality_score": 66.66666666666666,
+    "confidence_score": 82.87698412698413,
+    "filled_fields": 8,
+    "total_fields": 12
+  },
+  "processed_files": [
+    "20230301 - 10K - DV - Annual Report - 141 pages.pdf",
+    "20230301 - PR - DV - DoubleVerify Reports Fourth Quarter - 12 pages.pdf",
+    "20231109 - PR - DV - DoubleVerify Reports Third Quarter - 2 pages (1).pdf",
+    "20231110 - IR - DV - Q3 Investor Presentation Quarter - 38 pages.pdf",
+    "20231110 - T-PR - DV - Q3 Third Quarter 2023 - 16 pages.pdf",
+    "DV_email.pdf"
+  ],
+  "extracted_data": {
+    "revenue": "$452.42M",
+    "net_income": "$43.27K",
+    "total_assets": "$1.04B",
+    "total_liabilities": "$160.17M",
+    "eps": "0.26",
+    "employees": "348",
+    "operating_income": "59,024",
+    "operating_cash_flow": "94,862",
+    "current_assets": "10,161",
+    "current_liabilities": "8,310",
+    "shares_outstanding": "163,882",
+    "ebitda": "141,589",
+    "company_name": "Company",
+    "company_address": "New York, London, and Tel Aviv, an",
+    "fiscal_year": "December 31, 2022",
+    "industry": "led by a strong management team that has extensive experience leading technology and digital marketing\ncompanies",
+    "primary_business": "primarily responsible for providing these services to the customer",
+    "key_products": "insight into the nature and quality of ad-supported\ncontent on large, video-driven social platforms, such as Facebook, TikTok and YouTube"
+  },
+  "outputs": {
+    "document": "DoubleVerify_files_output_20250717_213958\\case_study_document_template_filled_20250717_214153.docx",
+    "excel": "DoubleVerify_files_output_20250717_213958\\enhanced_financial_report_20250717_214153.xlsx"
+  },
+  "enhancement_details": {
+    "pattern_matching": "Enhanced with context-aware validation",
+    "financial_normalization": "Improved scaling detection and formatting",
+    "consolidation": "Smart conflict resolution with field-specific logic",
+    "validation": "Comprehensive field-level validation rules",
+    "yfinance_integration": "Enhanced with data consistency checks"
+  }
+}
