@@ -1,6 +1,4 @@
-"""
-Enhanced Data Extraction Module - Targeted Accuracy Improvements
-"""
+
 
 import os
 import re
@@ -199,6 +197,133 @@ class TargetedPatternMatcher:
                 r'(?i)(?:approximately\s+|about\s+|over\s+)?([\d,]+)\s+(?:full-time\s+)?employees',
                 r'(?i)(?:number\s+of\s+)?employees\s*:?\s*([\d,]+)',
                 r'(?i)workforce\s+of\s+(?:approximately\s+|about\s+)?([\d,]+)',
+            ],
+            'operating_income': [
+                # Operating income patterns
+                r'(?:Operating\s+income|Operating\s+earnings)\s*\$?\s*([\d,\.]+(?:\s*(?:million|billion|m|b))?)',
+                r'(?i)operating\s+income\s+(?:of\s+|was\s+|were\s+)?\$?\s*([\d,\.]+\s*(?:million|billion|m|b)?)',
+                r'(?i)income\s+from\s+operations\s*\$?\s*([\d,\.]+\s*(?:million|billion|m|b)?)',
+            ],
+            'operating_cash_flow': [
+                # Operating cash flow patterns
+                r'(?:Operating\s+cash\s+flow|Cash\s+flow\s+from\s+operating)\s*\$?\s*([\d,\.]+(?:\s*(?:million|billion|m|b))?)',
+                r'(?i)(?:net\s+)?cash\s+(?:provided\s+by|from)\s+operating\s+activities\s*\$?\s*([\d,\.]+\s*(?:million|billion|m|b)?)',
+                r'(?i)operating\s+cash\s+flow\s+(?:of\s+|was\s+|were\s+)?\$?\s*([\d,\.]+\s*(?:million|billion|m|b)?)',
+            ],
+            'shareholders_equity': [
+                # Shareholders equity patterns
+                r'(?:Total\s+shareholders?\s+equity|Stockholders?\s+equity)\s*\$?\s*([\d,\.]+(?:\s*(?:million|billion|m|b))?)',
+                r'(?i)total\s+shareholders?\s+equity\s+(?:of\s+|was\s+|were\s+)?\$?\s*([\d,\.]+\s*(?:million|billion|m|b)?)',
+                r'(?i)stockholders?\s+equity\s*\$?\s*([\d,\.]+\s*(?:million|billion|m|b)?)',
+            ],
+            'roe': [
+                # Return on equity patterns
+                r'(?i)return\s+on\s+equity\s*(?:of\s+|was\s+|were\s+)?([\d\.]+)%',
+                r'(?i)ROE\s*(?:of\s+|was\s+|were\s+)?([\d\.]+)%',
+                r'(?i)return\s+on\s+shareholders?\s+equity\s*(?:of\s+)?([\d\.]+)\s*percent',
+            ],
+            'gross_profit': [
+                # Gross profit patterns
+                r'(?:Gross\s+profit|Gross\s+income)\s*\$?\s*([\d,\.]+(?:\s*(?:million|billion|m|b))?)',
+                r'(?i)gross\s+profit\s+(?:of\s+|was\s+|were\s+)?\$?\s*([\d,\.]+\s*(?:million|billion|m|b)?)',
+            ],
+            'gross_margin': [
+                # Gross margin patterns
+                r'(?i)gross\s+(?:profit\s+)?margin\s*(?:of\s+|was\s+|were\s+)?([\d\.]+)%',
+                r'(?i)gross\s+margin\s*:\s*([\d\.]+)%',
+                r'(?i)gross\s+(?:profit\s+)?margin\s*(?:of\s+)?([\d\.]+)\s*percent',
+            ],
+            'current_assets': [
+                # Current assets patterns
+                r'(?:Total\s+current\s+assets|Current\s+assets)\s*\$?\s*([\d,\.]+(?:\s*(?:million|billion|m|b))?)',
+                r'(?i)current\s+assets\s+(?:of\s+|were\s+|was\s+)?\$?\s*([\d,\.]+\s*(?:million|billion|m|b)?)',
+            ],
+            'current_liabilities': [
+                # Current liabilities patterns
+                r'(?:Total\s+current\s+liabilities|Current\s+liabilities)\s*\$?\s*([\d,\.]+(?:\s*(?:million|billion|m|b))?)',
+                r'(?i)current\s+liabilities\s+(?:of\s+|were\s+|was\s+)?\$?\s*([\d,\.]+\s*(?:million|billion|m|b)?)',
+            ],
+            'current_ratio': [
+                # Current ratio patterns
+                r'(?i)current\s+ratio\s*(?:of\s+|was\s+|were\s+)?([\d\.]+)',
+                r'(?i)current\s+ratio\s*:\s*([\d\.]+)',
+                r'(?i)current\s+ratio\s*(?:of\s+)?([\d\.]+)\s*(?:to\s+1)?',
+            ],
+            'total_debt': [
+                # Total debt patterns
+                r'(?:Total\s+debt|Long-term\s+debt)\s*\$?\s*([\d,\.]+(?:\s*(?:million|billion|m|b))?)',
+                r'(?i)total\s+debt\s+(?:of\s+|was\s+|were\s+)?\$?\s*([\d,\.]+\s*(?:million|billion|m|b)?)',
+                r'(?i)long-term\s+debt\s*\$?\s*([\d,\.]+\s*(?:million|billion|m|b)?)',
+            ],
+            'debt_to_equity': [
+                # Debt to equity patterns
+                r'(?i)debt\s+to\s+equity\s*(?:ratio\s*)?(?:of\s+|was\s+|were\s+)?([\d\.]+)',
+                r'(?i)debt-to-equity\s*(?:ratio\s*)?(?:of\s+)?([\d\.]+)',
+                r'(?i)D/E\s*(?:ratio\s*)?(?:of\s+)?([\d\.]+)',
+            ],
+            'pe_ratio': [
+                # P/E ratio patterns
+                r'(?i)(?:price\s+to\s+earnings|P/E)\s*(?:ratio\s*)?(?:of\s+|was\s+|were\s+)?([\d\.]+)',
+                r'(?i)PE\s*(?:ratio\s*)?(?:of\s+)?([\d\.]+)',
+                r'(?i)price\s+earnings\s*(?:ratio\s*)?(?:of\s+)?([\d\.]+)',
+            ],
+            'book_value_per_share': [
+                # Book value per share patterns
+                r'(?i)book\s+value\s+per\s+share\s*\$?\s*([\d\.\-]+)',
+                r'(?i)BVPS\s*\$?\s*([\d\.\-]+)',
+                r'(?i)book\s+value\s+per\s+common\s+share\s*\$?\s*([\d\.\-]+)',
+            ],
+            'dividend_per_share': [
+                # Dividend per share patterns
+                r'(?i)dividend\s+per\s+share\s*\$?\s*([\d\.\-]+)',
+                r'(?i)DPS\s*\$?\s*([\d\.\-]+)',
+                r'(?i)quarterly\s+dividend\s*\$?\s*([\d\.\-]+)',
+            ],
+            'dividend_yield': [
+                # Dividend yield patterns
+                r'(?i)dividend\s+yield\s*(?:of\s+|was\s+|were\s+)?([\d\.]+)%',
+                r'(?i)yield\s*(?:of\s+)?([\d\.]+)\s*percent',
+                r'(?i)annual\s+yield\s*(?:of\s+)?([\d\.]+)%',
+            ],
+            'shares_outstanding': [
+                # Shares outstanding patterns
+                r'(?i)(?:shares\s+outstanding|outstanding\s+shares)\s*(?:of\s+|were\s+|was\s+)?([\d,\.]+(?:\s*(?:million|billion|m|b))?)',
+                r'(?i)common\s+shares\s+outstanding\s*(?:of\s+)?([\d,\.]+\s*(?:million|billion|m|b)?)',
+                r'(?i)weighted\s+average\s+shares\s+outstanding\s*(?:of\s+)?([\d,\.]+\s*(?:million|billion|m|b)?)',
+            ],
+            'roa': [
+                # Return on assets patterns
+                r'(?i)return\s+on\s+assets\s*(?:of\s+|was\s+|were\s+)?([\d\.]+)%',
+                r'(?i)ROA\s*(?:of\s+|was\s+|were\s+)?([\d\.]+)%',
+                r'(?i)return\s+on\s+total\s+assets\s*(?:of\s+)?([\d\.]+)\s*percent',
+            ],
+            'roic': [
+                # Return on invested capital patterns
+                r'(?i)return\s+on\s+invested\s+capital\s*(?:of\s+|was\s+|were\s+)?([\d\.]+)%',
+                r'(?i)ROIC\s*(?:of\s+|was\s+|were\s+)?([\d\.]+)%',
+                r'(?i)return\s+on\s+capital\s*(?:of\s+)?([\d\.]+)\s*percent',
+            ],
+            'working_capital': [
+                # Working capital patterns
+                r'(?i)working\s+capital\s+(?:of\s+|was\s+|were\s+)?\$?\s*([\d,\.]+\s*(?:million|billion|m|b)?)',
+                r'(?i)net\s+working\s+capital\s*\$?\s*([\d,\.]+\s*(?:million|billion|m|b)?)',
+            ],
+            'enterprise_value': [
+                # Enterprise value patterns
+                r'(?i)enterprise\s+value\s*\$?\s*([\d,\.]+\s*(?:million|billion|trillion|m|b|t)?)',
+                r'(?i)EV\s*\$?\s*([\d,\.]+\s*(?:million|billion|trillion|m|b|t)?)',
+            ],
+            'ebitda': [
+                # EBITDA patterns
+                r'(?i)EBITDA\s*\$?\s*([\d,\.]+(?:\s*(?:million|billion|m|b))?)',
+                r'(?i)earnings\s+before\s+interest,?\s+taxes,?\s+depreciation\s+and\s+amortization\s*\$?\s*([\d,\.]+\s*(?:million|billion|m|b)?)',
+                r'(?i)adjusted\s+EBITDA\s*\$?\s*([\d,\.]+\s*(?:million|billion|m|b)?)',
+            ],
+            'free_cash_flow': [
+                # Free cash flow patterns
+                r'(?i)free\s+cash\s+flow\s*\$?\s*([\d,\.]+(?:\s*(?:million|billion|m|b))?)',
+                r'(?i)FCF\s*\$?\s*([\d,\.]+\s*(?:million|billion|m|b)?)',
+                r'(?i)unlevered\s+free\s+cash\s+flow\s*\$?\s*([\d,\.]+\s*(?:million|billion|m|b)?)',
             ],
         }
         

@@ -1,6 +1,6 @@
 """
 Enhanced Financial Automation System - Main Runner
-Combines enhanced and ultra-targeted extraction for maximum accuracy
+Uses enhanced extraction for maximum accuracy
 """
 
 import os
@@ -12,7 +12,6 @@ from typing import Dict, List, Any
 
 # Import enhanced components
 from enhanced_data_extraction import EnhancedFinancialDataExtractor
-from ultra_targeted_extraction import UltraTargetedFinancialExtractor
 from enhanced_automation_engine import EnhancedAutomationEngine
 
 # Configure logging
@@ -27,7 +26,6 @@ class FinancialAutomationSystem:
     
     def __init__(self):
         self.enhanced_extractor = EnhancedFinancialDataExtractor()
-        self.ultra_targeted_extractor = UltraTargetedFinancialExtractor()
         self.automation_engine = EnhancedAutomationEngine(debug=True)
     
     def process_company_documents(self, company_folder: str, output_folder: str = None) -> Dict[str, Any]:
@@ -72,44 +70,7 @@ class FinancialAutomationSystem:
             else:
                 print(f"  {field.replace('_', ' ').title()}: ❌ Not found")
     
-    def run_accuracy_test(self):
-        """Run accuracy test on all companies"""
-        print("🧪 RUNNING ACCURACY TEST ON ALL COMPANIES")
-        print("=" * 60)
-        
-        test_folders = ['DoubleVerify_files', 'BlueBird_files', 'Apple_files', 'Microsoft_files']
-        results = {}
-        
-        for folder in test_folders:
-            if os.path.exists(folder):
-                print(f"\n📁 Testing: {folder}")
-                result = self.process_company_documents(folder)
-                results[folder] = result
-            else:
-                print(f"❌ Folder not found: {folder}")
-        
-        # Summary
-        print("\n🎯 ACCURACY TEST SUMMARY")
-        print("=" * 40)
-        
-        successful_tests = sum(1 for r in results.values() if r.get('success', False))
-        total_tests = len(results)
-        
-        print(f"Total Tests: {total_tests}")
-        print(f"Successful: {successful_tests}")
-        
-        if successful_tests > 0:
-            avg_accuracy = sum(r['accuracy_metrics']['overall_accuracy'] for r in results.values() if r.get('success', False)) / successful_tests
-            print(f"Average Accuracy: {avg_accuracy:.1f}%")
-            
-            print("\n📈 Company Results:")
-            for company, result in results.items():
-                if result.get('success', False):
-                    accuracy = result['accuracy_metrics']['overall_accuracy']
-                    status = "✅ GOOD" if accuracy >= 75 else "⚠️ NEEDS WORK"
-                    print(f"  {company}: {accuracy:.1f}% {status}")
-        
-        return results
+
 
 
 def main():
@@ -117,24 +78,22 @@ def main():
     system = FinancialAutomationSystem()
     
     if len(sys.argv) < 2:
-        print("🔧 FINANCIAL AUTOMATION SYSTEM - ENHANCED ACCURACY")
+        print("🔧 FINANCIAL AUTOMATION SYSTEM - FILE GENERATOR")
         print("=" * 60)
         print("Usage:")
         print("  python main.py <company_folder>     - Process specific company")
-        print("  python main.py --test               - Run accuracy test on all companies")
         print("  python main.py --help               - Show this help")
         print()
         print("Examples:")
         print("  python main.py DoubleVerify_files")
         print("  python main.py BlueBird_files")
-        print("  python main.py --test")
+        print("  python main.py Apple_files")
+        print("  python main.py Microsoft_files")
         return
     
     command = sys.argv[1]
     
-    if command == '--test':
-        system.run_accuracy_test()
-    elif command == '--help':
+    if command == '--help':
         print("Help displayed above")
         return
     elif os.path.exists(command):

@@ -196,15 +196,48 @@ class EnhancedAutomationEngine:
             if yfinance_data:
                 logger.info(f"📈 yfinance data retrieved for {final_symbol}")
                 
-                # Enhanced data integration with validation
+                # Enhanced data integration with comprehensive yfinance data
                 enhanced_data = consolidated_data.copy()
                 
-                # Fill missing data with yfinance data
-                if not enhanced_data.get('market_cap') and yfinance_data.get('market_cap'):
-                    enhanced_data['market_cap'] = yfinance_data['market_cap']
+                # Fill missing data with yfinance data - comprehensive integration
+                yfinance_fields = [
+                    'market_cap', 'employees', 'operating_cash_flow', 'shareholders_equity',
+                    'roe', 'gross_margin', 'operating_margin', 'net_margin', 'current_ratio',
+                    'debt_to_equity', 'eps', 'pe_ratio', 'book_value_per_share',
+                    'competitors', 'acquisitions', 'product_launches', 'strategic_initiatives',
+                    'regulatory_changes', 'market_developments', 'overall_rating',
+                    'price_target', 'investment_horizon', 'risk_assessment',
+                    'strengths_analysis', 'weaknesses_analysis', 'opportunities_analysis',
+                    'threats_analysis'
+                ]
                 
-                if not enhanced_data.get('employees') and yfinance_data.get('employees'):
-                    enhanced_data['employees'] = yfinance_data['employees']
+                for field in yfinance_fields:
+                    if not enhanced_data.get(field) and yfinance_data.get(field):
+                        enhanced_data[field] = yfinance_data[field]
+                
+                # Always use yfinance financial metrics if available (they're more accurate)
+                financial_metrics = [
+                    'operating_cash_flow', 'shareholders_equity', 'roe', 'gross_margin',
+                    'operating_margin', 'net_margin', 'current_ratio', 'debt_to_equity',
+                    'eps', 'pe_ratio', 'book_value_per_share'
+                ]
+                
+                for metric in financial_metrics:
+                    if yfinance_data.get(metric) and yfinance_data[metric] != 'N/A':
+                        enhanced_data[metric] = yfinance_data[metric]
+                
+                # Always use yfinance analysis sections (they're more comprehensive)
+                analysis_sections = [
+                    'competitors', 'acquisitions', 'product_launches', 'strategic_initiatives',
+                    'regulatory_changes', 'market_developments', 'overall_rating',
+                    'price_target', 'investment_horizon', 'risk_assessment',
+                    'strengths_analysis', 'weaknesses_analysis', 'opportunities_analysis',
+                    'threats_analysis'
+                ]
+                
+                for section in analysis_sections:
+                    if yfinance_data.get(section):
+                        enhanced_data[section] = yfinance_data[section]
                 
                 # Validate financial data consistency
                 if yfinance_data.get('revenue') and enhanced_data.get('revenue'):
@@ -534,26 +567,3 @@ class EnhancedAutomationEngine:
                 'yfinance_integration': 'Enhanced with data consistency checks'
             }
         }
-
-
-# Usage example
-if __name__ == "__main__":
-    # Enhanced automation engine demo
-    engine = EnhancedAutomationEngine(debug=True)
-    
-    # Test with existing data
-    test_folders = [
-        "DoubleVerify_files",
-        "BlueBird_files"
-    ]
-    
-    for folder in test_folders:
-        if os.path.exists(folder):
-            print(f"\n🔍 Testing enhanced extraction on {folder}...")
-            result = engine.process_documents(folder)
-            if result['success']:
-                print(f"✅ Enhanced processing successful!")
-                print(f"📊 Accuracy: {result['accuracy_metrics']['overall_accuracy']:.1f}%")
-                print(f"📁 Report: {result['report_path']}")
-            else:
-                print(f"❌ Enhanced processing failed: {result['error']}")

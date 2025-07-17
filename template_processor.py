@@ -72,27 +72,34 @@ class EnhancedTemplateProcessor:
             raise
     
     def populate_template(self, template_path: str, data: Dict[str, Any], output_path: str):
-        """Populate template with data and save as both Excel and DOCX"""
+        """Populate template with data and save as DOCX"""
         template_path = Path(template_path)
+        output_dir = Path(output_path)
         
         try:
-            # Always create Excel output for data analysis
-            df = pd.DataFrame(list(data.items()), columns=['Field Name', 'Value'])
-            excel_output_path = Path(output_path).with_suffix('.xlsx')
-            df.to_excel(excel_output_path, index=False)
-            logger.info(f"Excel report saved: {excel_output_path}")
-            
             # If template is DOCX, create populated DOCX document
             if template_path.suffix.lower() == '.docx' and self._has_docx:
-                docx_output_path = Path(output_path).with_suffix('.docx')
+                # Create filename based on template name and timestamp
+                from datetime import datetime
+                timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+                filename = f"{template_path.stem}_filled_{timestamp}.docx"
+                docx_output_path = output_dir / filename
                 self._populate_docx_template(template_path, data, docx_output_path)
                 logger.info(f"DOCX document saved: {docx_output_path}")
+                return str(docx_output_path)
             
             # If template is TXT, create populated TXT document
             elif template_path.suffix.lower() == '.txt':
-                txt_output_path = Path(output_path).with_suffix('.txt')
+                # Create filename based on template name and timestamp
+                from datetime import datetime
+                timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+                filename = f"{template_path.stem}_filled_{timestamp}.txt"
+                txt_output_path = output_dir / filename
                 self._populate_txt_template(template_path, data, txt_output_path)
                 logger.info(f"TXT document saved: {txt_output_path}")
+                return str(txt_output_path)
+            
+            return None
                 
         except Exception as e:
             logger.error(f"Error populating template: {e}")
