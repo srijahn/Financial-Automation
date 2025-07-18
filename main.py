@@ -30,7 +30,7 @@ class FinancialAutomationSystem:
     
     def process_company_documents(self, company_folder: str, output_folder: str = None) -> Dict[str, Any]:
         """Process documents for a specific company with enhanced accuracy"""
-        print(f"🚀 Processing {company_folder} with Enhanced Accuracy System")
+        print(f"🚀 Processing {company_folder}")
         print("=" * 60)
         
         # Use enhanced automation engine
@@ -42,8 +42,8 @@ class FinancialAutomationSystem:
         
         if result['success']:
             print(f"✅ Processing completed successfully!")
-            print(f"📊 Accuracy: {result['accuracy_metrics']['overall_accuracy']:.1f}%")
-            print(f"📁 Outputs: {result['outputs']}")
+            # print(f"📊 Accuracy: {result['accuracy_metrics']['overall_accuracy']:.1f}%")
+            # print(f"📁 Outputs: {result['outputs']}")
             
             # Display key extracted data
             self._display_extracted_data(result['consolidated_data'])
@@ -70,44 +70,36 @@ class FinancialAutomationSystem:
             else:
                 print(f"  {field.replace('_', ' ').title()}: ❌ Not found")
     
-
-
+def get_available_folders():
+    """Dynamically find all *_files folders"""
+    folders = []
+    for item in os.listdir('.'):
+        if os.path.isdir(item) and item.endswith('_files'):
+            folders.append(item)
+    return sorted(folders)
 
 def main():
     """Main function with command line interface"""
     system = FinancialAutomationSystem()
     
     if len(sys.argv) < 2:
-        print("🔧 FINANCIAL AUTOMATION SYSTEM - FILE GENERATOR")
-        print("=" * 60)
-        print("Usage:")
-        print("  python main.py <company_folder>     - Process specific company")
-        print("  python main.py --help               - Show this help")
-        print()
-        print("Examples:")
-        print("  python main.py DoubleVerify_files")
-        print("  python main.py BlueBird_files")
-        print("  python main.py Apple_files")
-        print("  python main.py Microsoft_files")
+        print("❌ No company folder specified")
+        print("Available folders:")
+        for folder in get_available_folders():
+            print(f"  ✅ {folder}")
         return
     
     command = sys.argv[1]
-    
-    if command == '--help':
-        print("Help displayed above")
-        return
-    elif os.path.exists(command):
+
+    if os.path.exists(command):
         # Process specific company
-        output_folder = f"{command}_output_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+        output_folder = f"{command}_output"
         system.process_company_documents(command, output_folder)
     else:
         print(f"❌ Folder not found: {command}")
         print("Available folders:")
-        for folder in ['DoubleVerify_files', 'BlueBird_files', 'Apple_files', 'Microsoft_files']:
-            if os.path.exists(folder):
-                print(f"  ✅ {folder}")
-            else:
-                print(f"  ❌ {folder} (not found)")
+        for folder in get_available_folders():
+            print(f"  ✅ {folder}")
 
 
 if __name__ == "__main__":
